@@ -7,7 +7,7 @@ from typing import List, Union
 import json
 
 VERSION_MAJOR = 1
-VERSION_MINOR = 0
+VERSION_MINOR = 1
 VERSION_PATCH = 0
 app_version = (f'v{VERSION_MAJOR}.{VERSION_MINOR:0>2}.{VERSION_PATCH}')
 
@@ -42,6 +42,7 @@ class DMLotteryGUI:
         self._prize_type_vars = [StringVar(), StringVar(), StringVar(), StringVar(), StringVar(), StringVar(), StringVar(), StringVar()]
         self._prize_quantity_vars = [StringVar(), StringVar(), StringVar(), StringVar(), StringVar(), StringVar(), StringVar(), StringVar()]
         self._gold_quantity_vars = [StringVar(), StringVar(), StringVar(), StringVar(), StringVar(), StringVar(), StringVar(), StringVar()]
+        self._gold_qty_combs = []
         self._build()
         self._root.mainloop()
 
@@ -70,18 +71,22 @@ class DMLotteryGUI:
             column=0, row=self._row, sticky=tk.E, pady=PADDING_Y, padx=PADDING_X_LABEL)
         ttk.Label(self._root, text='奖励类型', style='CN.TLabel').grid(
             column=1, row=self._row, sticky=tk.E, pady=PADDING_Y, padx=PADDING_X_LABEL)
-        ttk.Combobox(self._root, state='readonly', values=DMLotteryGUI.PRIZE_TYPES, style='CN.TCombobox', textvariable=self._prize_type_vars[id], width=10).grid(
-            column=2, row=self._row, sticky=tk.W, pady=PADDING_Y, padx=PADDING_X_AFTER_LABEL)
+        comb = ttk.Combobox(self._root, state='readonly', values=DMLotteryGUI.PRIZE_TYPES, style='CN.TCombobox', 
+                    textvariable=self._prize_type_vars[id], width=10, exportselection=False)
+        comb.bind("<<ComboboxSelected>>", lambda obj=None, a=id : self.on_prize_type_selected(obj, a))
+        comb.grid(column=2, row=self._row, sticky=tk.W, pady=PADDING_Y, padx=PADDING_X_AFTER_LABEL)
+        comb.current(0)
 
         ttk.Label(self._root, text='奖励数量', style='CN.TLabel').grid(
             column=3, row=self._row, sticky=tk.E, pady=PADDING_Y, padx=PADDING_X_LABEL)
         ttk.Entry(self._root, textvariable=self._prize_quantity_vars[id], width=10).grid(
             column=4, row=self._row, sticky=tk.W, pady=PADDING_Y, padx=PADDING_X_AFTER_LABEL)
 
-        ttk.Label(self._root, text='金币', style='CN.TLabel').grid(
+        ttk.Label(self._root, text='金币数', style='CN.TLabel').grid(
             column=5, row=self._row, sticky=tk.E, pady=PADDING_Y, padx=PADDING_X_LABEL)
-        ttk.Entry(self._root, textvariable=self._gold_quantity_vars[id], width=10).grid(
-            column=6, row=self._row, sticky=tk.W, pady=PADDING_Y, padx=PADDING_X_AFTER_LABEL)
+        gold_comb = ttk.Entry(self._root, textvariable=self._gold_quantity_vars[id], width=10, state=tk.DISABLED)
+        gold_comb.grid(column=6, row=self._row, sticky=tk.W, pady=PADDING_Y, padx=PADDING_X_AFTER_LABEL)
+        self._gold_qty_combs.append(gold_comb)
 
     def _build_button_row(self):
         self._panel = ttk.Frame(self._root)
@@ -103,6 +108,12 @@ class DMLotteryGUI:
             row.config(PrizeType(prize_type),
                         self._prize_quantity_vars[i].get(),
                         gold_quantity)
+
+    def on_prize_type_selected(self, evtobj: tk.Event, id):
+        if evtobj.widget.current() == 3:
+            self._gold_qty_combs[id].config(state=tk.NORMAL)
+        else:
+            self._gold_qty_combs[id].config(state=tk.DISABLED)
 
     def on_save(self):
         p = Profile()
