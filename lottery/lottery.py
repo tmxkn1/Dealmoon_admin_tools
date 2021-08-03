@@ -2,7 +2,7 @@ from enum import Enum
 from typing import Union
 from selenium.common.exceptions import ElementNotVisibleException, NoSuchElementException
 from selenium.webdriver.remote.webelement import WebElement
-from src.browser_core import *
+from lib.autobrowser import *
 import json
 
 LOTTERY_URL = 'https://adm.dealmoon.co.uk/pages/index.html#/common-lottery/edit-lottery'
@@ -34,6 +34,7 @@ class DMLottery:
         self._browser.find_element_by_xpath(u'//*[@id="UK"]/div[1]/section/div/div/div/form/div[3]/input').click()
 
     def initiate_lottery(self):        
+        self._browser.refresh()
         self._browser.get(LOTTERY_URL)
         wait_until_visible(self._browser, By.XPATH, DMLottery.get_row_xpath(1))
 
